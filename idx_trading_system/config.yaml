@@ -1,0 +1,117 @@
+# Configuration for IDX Trading System
+
+# Universe and data
+universe:
+  # Core liquid stocks (LQ45 constituents)
+  tickers:
+    - TLKM.JK  # Telkom Indonesia
+    - BBCA.JK  # Bank Central Asia
+    - BBRI.JK  # Bank Rakyat Indonesia
+    - BMRI.JK  # Bank Mandiri
+    - ASII.JK  # Astra International
+    - UNVR.JK  # Unilever Indonesia
+    - HMSP.JK  # HM Sampoerna
+    - KLBF.JK  # Kalbe Farma
+    - ICBP.JK  # Indofood CBP
+    - INDF.JK  # Indofood Sukses Makmur
+  index: ^JKSE
+  start_date: "2005-01-01"
+  end_date: null  # null means today
+
+# Macro/exogenous data
+macro:
+  fx: USDIDR=X
+  commodities:
+    oil: CL=F
+    coal: null  # No direct ticker, can use proxies
+  global_indices:
+    spx: ^GSPC
+    hscei: ^HSCE
+
+# Feature engineering
+features:
+  momentum_windows: [5, 20, 60, 120]
+  volatility_windows: [20, 60]
+  rsi_period: 14
+  macd: [12, 26, 9]
+  volume_zscore_window: 20
+  normalization_window: 252
+
+# Labels
+labels:
+  forward_periods: [5, 10, 20]
+  classification_threshold: 0.0  # for directional prediction
+
+# Models
+models:
+  baselines:
+    - linear
+    - xgboost
+    - lightgbm
+  neural:
+    - lstm
+    - transformer
+  lstm:
+    hidden_size: 64
+    num_layers: 2
+    dropout: 0.2
+    sequence_length: 60
+  transformer:
+    d_model: 64
+    nhead: 4
+    num_layers: 2
+    dropout: 0.2
+    sequence_length: 60
+  xgboost:
+    max_depth: 6
+    learning_rate: 0.05
+    n_estimators: 100
+    subsample: 0.8
+  lightgbm:
+    max_depth: 6
+    learning_rate: 0.05
+    n_estimators: 100
+    subsample: 0.8
+
+# Portfolio construction
+portfolio:
+  type: long_only
+  rebalance_frequency: weekly  # or daily
+  top_k: 5  # number of positions
+  volatility_target: 0.10  # 10% annualized
+  position_cap: 0.10  # max 10% per position
+  turnover_cap: 2.0  # max 200% annual turnover
+
+# Transaction costs
+costs:
+  commission: 0.0020  # 20 bps
+  slippage: 0.0020  # 20 bps
+  round_trip: 0.0040  # 40 bps total
+  min_trade_size: 1000000  # IDR 1M minimum
+
+# Backtesting
+backtest:
+  train_period: 10  # years
+  validation_period: 2  # years
+  test_period: 3  # years
+  walk_forward_step: 1  # years
+  splits:
+    - train: ["2005-01-01", "2014-12-31"]
+      val: ["2015-01-01", "2016-12-31"]
+      test: ["2017-01-01", "2019-12-31"]
+    - train: ["2006-01-01", "2015-12-31"]
+      val: ["2016-01-01", "2017-12-31"]
+      test: ["2018-01-01", "2020-12-31"]
+
+# Performance targets
+targets:
+  cagr: 0.15  # 15%
+  sharpe: 1.0
+  max_drawdown: 0.30  # -30%
+
+# Paths
+paths:
+  data_dir: "./idx_trading_system/data"
+  models_dir: "./idx_trading_system/models"
+  results_dir: "./results"
+  cache_dir: "./idx_trading_system/data/cache"
